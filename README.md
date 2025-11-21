@@ -120,6 +120,46 @@ Notes:
 - If you see an UNAVAILABLE/connection error, ensure the server is running and the port is correct. If using TLS, remove `-plaintext` and configure TLS options accordingly.
 - If grpcurl can't list services, server-side reflection may not be enabled; use the `-import-path` and `-proto` flags to provide the proto file directly.
 
+## Run the Java client (no grpcurl required)
+
+A tiny blocking Java client is included at `src/main/java/com/example/demo/client/BookClient.java`.
+
+First, start the server in one terminal (example):
+
+```bat
+mvn spring-boot:run
+```
+
+Then, run the client from another terminal.
+
+Option A — run using the Maven Exec plugin (no changes to POM required):
+
+```bat
+mvn org.codehaus.mojo:exec-maven-plugin:3.1.0:java -Dexec.mainClass="com.example.demo.client.BookClient" -Dexec.args="localhost 9090 123"
+```
+
+- The arguments are: host port bookId. All are optional (defaults: host=localhost port=9090 bookId=123).
+
+Option B — run with a local classpath (copy dependencies first):
+
+```bat
+mvn -DskipTests package dependency:copy-dependencies
+java -cp "target\classes;target\dependency\*" com.example.demo.client.BookClient localhost 9090 123
+```
+
+Expected output (if the server returns the sample response):
+
+```
+Response received:
+book_id: 123
+name: java
+type: AUTOBIOGRAPHY
+```
+
+Notes:
+- If your server listens on a different port, pass it as the second argument to the client.
+- If you run the client from an IDE, just run the `com.example.demo.client.BookClient` main method with program arguments: `localhost 9090 123`.
+
 ## Useful references
 
 - This project's proto files: `src/main/proto/*.proto`
@@ -127,10 +167,3 @@ Notes:
 - Run: `mvn spring-boot:run` or `java -jar target\demo-0.0.1-SNAPSHOT.jar`
 
 ---
-
-If you want, I can also:
-- add a small Java-based integration test that uses the `spring-grpc-test` dependency to call `getBook` directly;
-- or create a tiny Java client class with a main() method that calls the gRPC endpoint so you can run it without grpcurl.
-
-Tell me which you'd prefer and I'll add it.
-
